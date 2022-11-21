@@ -6,7 +6,7 @@ int main()
     int i, a[n], max, min;
     for (i = 0; i < n; i++)
     {
-        printf("\n Enter next no:");
+        printf("\n Enter number a[%d]: ", i);
         scanf("%d", &a[i]);
     }
     max = a[0];
@@ -21,6 +21,6 @@ int main()
             min = a[i];
         }
     }
-    printf("Maximum number is %d and minimum number is %d", max, min);
+    printf("\n\nMaximum number is %d and minimum number is %d", max, min);
     return 0;
 }
