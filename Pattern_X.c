@@ -1,22 +1,22 @@
 #include<stdio.h>
 int main()
 {
-    int i,j,h;
+    int i,j,n;
     printf("\nEnter height: ");
-    scanf("%d",&h);
-    for(i=1;i<2*h;i++)
+    scanf("%d",&n);
+    for(i=1;i<2*n;i++)
     {
-        for(j=1;j<2*h;j++)
+        for(j=1;j<2*n;j++)
         {
-            if(i==j || j==2*h-i)
+            if(i==j || j==2*n-i)
             {
-                if(i<=h)
+                if(i<=n)
                 {
                     printf("%d",i);
                 
                 }
                 else{
-                    printf("%d",2*h-i);
+                    printf("%d",2*n-i);
                 }
             }
             else
