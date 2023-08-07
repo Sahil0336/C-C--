@@ -13,7 +13,7 @@ int main()
 {
     struct Student s[2];
     int i;
-    printf("\nEnter data of all students:\n");
+    printf("\nEnter data of all students:\n\n---------------------------------------\n");
     for (i = 0; i < 2; i++)
     {
         printf("Enter roll no. of student %d: ", i + 1);
@@ -40,5 +40,5 @@ int main()
     printf("\nThe Result of the Students: \n");
     printf("Roll no.  Name    Marks1  Marks2  Total   Grade\n");
     for (i = 0; i < 2; i++)
-    printf("   %d     %s       %d      %d      %d      %c\n", s[i].r, s[i].n, s[i].m1, s[i].m2, s[i].t, s[i].gr);
+    printf("   %d      %s       %d      %d      %d      %c\n", s[i].r, s[i].n, s[i].m1, s[i].m2, s[i].t, s[i].gr);
 }
