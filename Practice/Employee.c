@@ -39,7 +39,7 @@ void main()
             e[i].itax = e[i].gp * 0.3;
         e[i].np = e[i].gp - e[i].itax;
     }
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 2; i++)
     {
         printf("\n============================================================\n");
         printf("\n	         	PAYSLIP ");
@@ -51,6 +51,6 @@ void main()
         printf("	MA: %d", e[i].ma);
         printf("\n\n		GROSS PAY: %ld", e[i].gp);
         printf("\n		Net Pay: %ld", e[i].np);
-        printf("\n\n=============================================================");
+        printf("\n\n=============================================================\n\n");
     }
 }
