@@ -6,7 +6,8 @@ struct employee
     int basic, da, hra, ma, itax;
     long int gp, np;
 };
-void main()
+
+int main()
 {
     struct employee e[3];
     int i;
@@ -15,18 +16,14 @@ void main()
     {
         printf("Enter employee no.%d: ", i + 1);
         scanf("%d", &e[i].eno);
-        fflush(stdin);
+        getchar(); // Clear the newline character from the input buffer
         printf("Enter name: ");
-        gets(e[i].n);
-        fflush(stdin);
+        fgets(e[i].n, sizeof(e[i].n), stdin);
         printf("Enter basic pay: ");
         scanf("%d", &e[i].basic);
-        fflush(stdin);
 
         e[i].da = e[i].basic * 0.7;
         if (e[i].basic < 5000)
-            e[i].hra = e[i].basic * 0.35;
-        else
             e[i].hra = e[i].basic * 0.5;
         e[i].ma = e[i].basic * 0.15;
         if (e[i].ma > 6000)
@@ -45,15 +42,16 @@ void main()
     for (i = 0; i < 2; i++)
     {
         printf("\n============================================================\n");
-        printf("\n	         	PAYSLIP of %d", e[i].eno);
+        printf("\n              PAYSLIP of %d", e[i].eno);
         printf("\n\n Employee Number: %d", e[i].eno);
         printf("\n Employee Name: %s", e[i].n);
-        printf("			Basic Pay: %d", e[i].basic);
+        printf("            Basic Pay: %d", e[i].basic);
         printf("\n\n  DA: %d", e[i].da);
-        printf("	HRA: %d", e[i].hra);
-        printf("	MA: %d", e[i].ma);
-        printf("\n\n		GROSS PAY: %ld", e[i].gp);
-        printf("\n		Net Pay: %ld", e[i].np);
+        printf("    HRA: %d", e[i].hra);
+        printf("    MA: %d", e[i].ma);
+        printf("\n\n        GROSS PAY: %ld", e[i].gp);
+        printf("\n        Net Pay: %ld", e[i].np);
         printf("\n\n=============================================================\n\n");
     }
+    return 0;
 }
