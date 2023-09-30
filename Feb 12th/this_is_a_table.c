@@ -5,7 +5,7 @@ int main()
     int i;
     printf("\nEnter a string: ");
     gets(ch);
-    for (i = 0; ch[i] != '\0'; i++)
+    for (i = 0; ch[i]; i++)
         if (ch[i] == ' ')
             printf("\n");
         else
