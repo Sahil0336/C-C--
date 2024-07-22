@@ -2,6 +2,7 @@
 // Then respectively does to the rest of the characters.
 
 // Example: input: sahil   output: SaHiL
+// only works when the input is in lowercase
 
 #include <stdio.h>
 #define n 32
