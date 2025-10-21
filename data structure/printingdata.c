@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 struct node
 {
     int data;
     struct node *link;
 };
+void print_data(struct node *head);
 
 int main()
 {
@@ -22,9 +22,22 @@ int main()
     current->data = 76;
     current->link = NULL;
 
-    
     head->link->link = current;
 
-    printf("%d  %d  %d", head->data, current->data, head->link->data);
-    return 0;
+    print_data(head);
+}
+
+void print_data(struct node *head)
+{
+    if (head == NULL)
+        printf("Linked List is empty.");
+
+    struct node *ptr = NULL;
+    ptr = head;
+
+    while (ptr != NULL)
+    {
+        printf(":%d:", ptr->data);
+        ptr = ptr->link;
+    }
 }

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Document Analyzer & Converter</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom font family */
+        :root {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom focus state */
+        .focus-ring {
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); /* blue-500 equivalent */
+        }
+        /* Custom styling for the file input appearance */
+        .file-input-wrapper {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .file-input-wrapper:hover {
+            border-color: #3b82f6; /* blue-500 */
+            background-color: #f0f9ff; /* blue-50 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+
+    <div id="converter-card" class="bg-white p-8 md:p-12 rounded-2xl shadow-2xl w-full max-w-lg transition-all duration-500">
+        
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-2 flex items-center">
+            <i data-lucide="file-text" class="w-7 h-7 mr-3 text-red-600"></i>
+            PDF Document Analyzer
+        </h1>
+        <p class="text-gray-500 mb-8">
+            Upload your PDF to convert it to DOCX or use Gemini to analyze its contents.
+        </p>
+
+        <!-- Main Input Area -->
+        <div id="file-upload-section">
+            <label for="pdf-upload" class="file-input-wrapper flex flex-col items-center justify-center border-4 border-dashed border-gray-300 rounded-xl p-10 text-center text-gray-600">
+                <i data-lucide="cloud-upload" class="w-12 h-12 text-blue-500 mb-3"></i>
+                <span class="font-semibold text-lg mb-1">Drag & Drop or Click to Upload</span>
+                <span class="text-sm">Only PDF files (.pdf) are accepted</span>
+                <input type="file" id="pdf-upload" accept=".pdf" class="hidden" onchange="handleFileSelect(event)">
+            </label>
+        </div>
+
+        <!-- File Display and Conversion Feature -->
+        <div id="file-info" class="hidden mt-6">
+            <div class="bg-gray-100 p-4 rounded-lg flex items-center justify-between transition-opacity duration-300">
+                <div class="flex items-center">
+                    <i data-lucide="file-check-2" class="w-6 h-6 text-green-600 mr-3"></i>
+                    <span id="file-name" class="font-medium text-gray-700 truncate max-w-xs"></span>
+                </div>
+                <button id="convert-button" onclick="startConversion()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition duration-200 flex items-center focus:outline-none focus-ring text-sm">
+                    <i data-lucide="zap" class="w-4 h-4 mr-2"></i>
+                    Convert to DOCX
+                </button>
+            </div>
+
+            <!-- Gemini Features Area -->
+            <div id="gemini-features-area" class="mt-6 p-5 bg-yellow-50 rounded-xl border border-yellow-200">
+                <h3 class="font-bold text-lg text-yellow-800 mb-3 flex items-center">
+                    <i data-lucide="sparkles" class="w-5 h-5 mr-2 text-yellow-600"></i>
+                    AI Document Insights
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button onclick="handleSummarize()" class="bg-gray-700 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm flex items-center justify-center">
+                        Summarize Document ✨
+                    </button>
+                    <button onclick="handleActionItems()" class="bg-gray-700 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm flex items-center justify-center">
+                        Suggest Action Items ✨
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversion Status/Loading -->
+        <div id="status-message" class="hidden mt-6 p-4 rounded-xl text-center font-medium text-white bg-blue-500 flex items-center justify-center transition-opacity duration-300">
+            <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="status-text">Processing PDF...</span>
+        </div>
+
+        <!-- Gemini Output Area -->
+        <div id="gemini-output-area" class="hidden mt-6 bg-white p-6 rounded-xl border border-gray-200 shadow-md">
+            <h4 id="gemini-result-title" class="text-xl font-bold text-gray-800 mb-3 border-b pb-2"></h4>
+            <div id="gemini-result-content" class="text-gray-600 text-sm leading-relaxed">
+                <!-- LLM content will be inserted here -->
+            </div>
+        </div>
+        
+        <!-- Download/Success Area (for DOCX conversion) -->
+        <div id="download-area" class="hidden mt-6 bg-green-50 p-6 rounded-xl text-center border border-green-200 transition-opacity duration-300">
+            <i data-lucide="check-circle" class="w-10 h-10 text-green-600 mx-auto mb-3"></i>
+            <h3 class="text-xl font-bold text-green-800 mb-2">DOCX Conversion Complete!</h3>
+            <p class="text-green-700 mb-4">Your file is ready for download.</p>
+            <a id="download-link" href="#" download="converted_document.docx" class="inline-flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg transition duration-200 focus:outline-none focus-ring">
+                <i data-lucide="download" class="w-5 h-5 mr-2"></i>
+                Download Word File
+            </a>
+            <button onclick="resetApp()" class="mt-3 text-sm text-gray-500 hover:text-gray-700 block mx-auto">
+                Convert another file
+            </button>
+        </div>
+
+        <!-- Error Message Box -->
+        <div id="error-box" class="hidden mt-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+            <strong class="font-bold">Error:</strong>
+            <span id="error-text" class="block sm:inline ml-2"></span>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Configuration and Global Variables ---
+        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=";
+        const API_KEY = ""; // Canvas environment automatically provides the key
+
+        let selectedFile = null;
+        let originalFileName = "";
+
+        const converterCard = document.getElementById('converter-card');
+        const fileUploadSection = document.getElementById('file-upload-section');
+        const fileInfo = document.getElementById('file-info');
+        const fileNameElement = document.getElementById('file-name');
+        const statusMessage = document.getElementById('status-message');
+        const statusText = document.getElementById('status-text');
+        const downloadArea = document.getElementById('download-area');
+        const errorBox = document.getElementById('error-box');
+        const errorText = document.getElementById('error-text');
+        const geminiFeaturesArea = document.getElementById('gemini-features-area');
+        const geminiOutputArea = document.getElementById('gemini-output-area');
+
+        // Function to render Lucide icons after DOM manipulation
+        const renderIcons = () => {
+            lucide.createIcons();
+        };
+
+        // Initialize state on load
+        window.onload = () => {
+            renderIcons();
+        };
+
+        // --- Utility Functions ---
+
+        /**
+         * Simulates text extraction from the PDF.
+         * In a real application, this would involve a complex PDF parsing library (like PDF.js)
+         * to extract actual text content from the uploaded file.
+         */
+        function getSimulatedPdfText() {
+            return `The quarterly report highlights significant growth in the cloud computing division, which saw a 15% increase in revenue, largely attributed to the successful launch of Project Helix in Q2. However, the legacy software division experienced a 5% decline due to market saturation and increased competition. The board has mandated a strategic shift in Q4, focusing resources heavily on AI integration across all major product lines. Key action items include hiring 50 new AI specialists, allocating $10 million for R&D in cognitive services, and drafting a formal proposal for a partnership with the Acme Data Corporation to acquire their proprietary machine learning models. We must ensure compliance with all new GDPR regulations during this expansion.`;
+        }
+        
+        /**
+         * Converts simple LLM markdown list format (* item) to HTML <ul><li> format.
+         */
+        function formatLLMOutput(content) {
+            let formattedContent = content.trim();
+            // Handle numbered lists (1. 2. etc)
+            if (formattedContent.match(/^\d+\./m)) {
+                 return `<ol class="list-decimal ml-6 space-y-1">${formattedContent.split('\n').map(line => line.replace(/^\d+\.\s*/, '<li>')).join('')}</ol>`;
+            }
+            // Handle bullet points (* or -)
+            if (formattedContent.match(/^[\*\-]\s/m)) {
+                return `<ul class="list-disc ml-6 space-y-1">${formattedContent.split('\n').map(line => line.replace(/^[\*\-]\s*/, '<li>')).join('')}</ul>`;
+            }
+            // Fallback for general text (preserving line breaks)
+            return `<p class="whitespace-pre-wrap">${content}</p>`;
+        }
+        
+        /**
+         * Displays an error message to the user.
+         * @param {string} message - The error message to display.
+         */
+        function showError(message) {
+            errorText.textContent = message;
+            errorBox.classList.remove('hidden');
+            fileUploadSection.classList.remove('hidden');
+            fileInfo.classList.add('hidden');
+            statusMessage.classList.add('hidden');
+            downloadArea.classList.add('hidden');
+            geminiFeaturesArea.classList.add('hidden');
+            geminiOutputArea.classList.add('hidden');
+        }
+
+        // --- Core Application Logic ---
+
+        /**
+         * Resets the application state to allow for a new conversion.
+         */
+        function resetApp() {
+            selectedFile = null;
+            originalFileName = "";
+            
+            // Hide all post-upload elements
+            fileInfo.classList.add('hidden');
+            statusMessage.classList.add('hidden');
+            downloadArea.classList.add('hidden');
+            errorBox.classList.add('hidden');
+            geminiFeaturesArea.classList.add('hidden');
+            geminiOutputArea.classList.add('hidden');
+
+            // Show upload area and clear file input value
+            fileUploadSection.classList.remove('hidden');
+            document.getElementById('pdf-upload').value = '';
+        }
+
+        /**
+         * Handles the selection of a file from the input.
+         * @param {Event} event - The file input change event.
+         */
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.type !== 'application/pdf') {
+                showError("Please select a valid PDF file (.pdf).");
+                return;
+            }
+
+            errorBox.classList.add('hidden');
+            geminiOutputArea.classList.add('hidden');
+            
+            selectedFile = file;
+            originalFileName = file.name.replace(/\.pdf$/i, '');
+            
+            fileNameElement.textContent = file.name;
+            
+            // Update UI to show file info, conversion button, and Gemini features
+            fileUploadSection.classList.add('hidden');
+            fileInfo.classList.remove('hidden');
+
+            renderIcons();
+        }
+
+        /**
+         * Simulates the PDF to Word conversion process.
+         */
+        function startConversion() {
+            if (!selectedFile) {
+                showError("No file selected. Please upload a PDF first.");
+                return;
+            }
+
+            // 1. Hide features and show loading
+            geminiFeaturesArea.classList.add('hidden');
+            geminiOutputArea.classList.add('hidden');
+            errorBox.classList.add('hidden');
+            statusMessage.classList.remove('hidden');
+            statusMessage.classList.remove('bg-yellow-500');
+            statusMessage.classList.add('bg-blue-500');
+            statusText.textContent = "Processing PDF structure for DOCX conversion...";
+            
+            // Simulation of conversion time
+            setTimeout(() => {
+                statusText.textContent = "Finalizing Word (DOCX) document...";
+                
+                setTimeout(completeConversion, 1500); // Shorter conversion time
+            }, 1500);
+        }
+
+        /**
+         * Completes the simulation and prepares the download link.
+         */
+        function completeConversion() {
+            statusMessage.classList.add('hidden');
+
+            // DOCX File Generation Simulation (Placeholder)
+            const simulatedDocxContent = `
+                This document simulates the DOCX conversion for: ${originalFileName}.pdf.
+                
+                For analysis, the content extracted was:
+                
+                ${getSimulatedPdfText()}
+            `;
+            
+            const docxBlob = new Blob([simulatedDocxContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            const downloadUrl = URL.createObjectURL(docxBlob);
+            
+            document.getElementById('download-link').href = downloadUrl;
+            document.getElementById('download-link').download = `${originalFileName}_converted.docx`;
+
+            // 2. Show download area
+            downloadArea.classList.remove('hidden');
+            renderIcons();
+        }
+
+        // --- Gemini API Integration ---
+
+        /**
+         * Calls the Gemini API with exponential backoff for robustness.
+         */
+        async function callGeminiApi(systemPrompt, userQuery) {
+            let attempt = 0;
+            const MAX_RETRIES = 5;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+            
+            while (attempt < MAX_RETRIES) {
+                try {
+                    const response = await fetch(API_URL + API_KEY, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.status === 429) {
+                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        attempt++;
+                        continue;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "Could not generate content.";
+
+                } catch (error) {
+                    console.error("Gemini API call failed on attempt " + (attempt + 1) + ":", error);
+                    if (attempt === MAX_RETRIES - 1) {
+                        showError("LLM feature failed to load. Please try again.");
+                        return "Error processing request.";
+                    }
+                    const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    attempt++;
+                }
+            }
+        }
+
+        /**
+         * Handles the request to summarize the document.
+         */
+        async function handleSummarize() {
+            if (!selectedFile) return showError("Please upload a PDF first.");
+            
+            // 1. Setup UI for loading
+            geminiOutputArea.classList.add('hidden');
+            downloadArea.classList.add('hidden');
+            statusMessage.classList.remove('hidden');
+            statusMessage.classList.remove('bg-blue-500');
+            statusMessage.classList.add('bg-yellow-500');
+            statusText.textContent = "✨ Generating concise summary...";
+            
+            // 2. Prepare prompt
+            const pdfText = getSimulatedPdfText();
+            const systemPrompt = "You are a concise document analyst. Summarize the provided text in three key, focused bullet points. Do not include any introductory or concluding sentences outside the bullet points. Use simple language appropriate for a business report summary.";
+            const userQuery = `Summarize the following document content:\n\n${pdfText}`;
+            
+            // 3. Call API
+            const result = await callGeminiApi(systemPrompt, userQuery);
+            
+            // 4. Update UI
+            statusMessage.classList.add('hidden');
+            showLLMResult("Document Summary ✨", result);
+        }
+
+        /**
+         * Handles the request to extract action items from the document.
+         */
+        async function handleActionItems() {
+            if (!selectedFile) return showError("Please upload a PDF first.");
+
+            // 1. Setup UI for loading
+            geminiOutputArea.classList.add('hidden');
+            downloadArea.classList.add('hidden');
+            statusMessage.classList.remove('hidden');
+            statusMessage.classList.remove('bg-blue-500');
+            statusMessage.classList.add('bg-yellow-500');
+            statusText.textContent = "✨ Identifying key next steps and deliverables...";
+            
+            // 2. Prepare prompt
+            const pdfText = getSimulatedPdfText();
+            const systemPrompt = "You are an executive assistant. Based on the document provided, extract all mandatory and suggested next steps, deliverables, or action items into a numbered list. State the responsible party (e.g., 'The board', 'Management') if clearly mentioned. Be direct and concise.";
+            const userQuery = `Extract action items from the following document content:\n\n${pdfText}`;
+            
+            // 3. Call API
+            const result = await callGeminiApi(systemPrompt, userQuery);
+            
+            // 4. Update UI
+            statusMessage.classList.add('hidden');
+            showLLMResult("Suggested Action Items ✨", result);
+        }
+
+        /**
+         * Displays the LLM result in the dedicated output area.
+         */
+        function showLLMResult(title, content) {
+            document.getElementById('gemini-result-title').textContent = title;
+            document.getElementById('gemini-result-content').innerHTML = formatLLMOutput(content);
+            geminiOutputArea.classList.remove('hidden');
+            renderIcons();
+        }
+
+
+        // --- Drag-and-Drop Support ---
+        const dropArea = document.querySelector('.file-input-wrapper');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.style.borderColor = '#3b82f6';
+            dropArea.style.backgroundColor = '#f0f9ff';
+        }
+
+        function unhighlight() {
+            dropArea.style.borderColor = '#d1d5db';
+            dropArea.style.backgroundColor = '#ffffff';
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+
+            if (files.length > 0) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(files[0]);
+                document.getElementById('pdf-upload').files = dataTransfer.files;
+                handleFileSelect({ target: document.getElementById('pdf-upload') });
+            }
+        }
+    </script>
+</body>
+</html>
